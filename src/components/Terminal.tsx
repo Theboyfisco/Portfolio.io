@@ -16,7 +16,7 @@ const Terminal = () => {
   ]);
   const [input, setInput] = useState("");
   const [isMobile, setIsMobile] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -27,7 +27,9 @@ const Terminal = () => {
   }, []);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "auto" });
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
   }, [lines]);
 
   const execute = (cmd: string) => {
@@ -104,7 +106,7 @@ const Terminal = () => {
           onClick={() => inputRef.current?.focus()}
         >
           {titleBar}
-          <div className="p-4 text-xs sm:text-sm max-h-[68vh] overflow-y-auto space-y-1 font-mono">
+          <div ref={scrollRef} className="p-4 text-xs sm:text-sm max-h-[68vh] overflow-y-auto space-y-1 font-mono">
             {lines.map((line, i) => (
               <div
                 key={i}
@@ -122,14 +124,16 @@ const Terminal = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" && input.trim()) execute(input);
+                  if (e.key === "Enter" && input.trim()) {
+                    e.preventDefault();
+                    execute(input);
+                  }
                 }}
                 className="flex-1 bg-transparent outline-none text-foreground font-mono text-xs sm:text-sm ml-1"
                 spellCheck={false}
               />
               <span className="cursor-blink text-foreground">▌</span>
             </div>
-            <div ref={bottomRef} />
           </div>
         </div>
       </div>
